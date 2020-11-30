@@ -49,13 +49,17 @@ class KNN:
         dists, np array (num_test_samples, num_train_samples) - array
            with distances between each test and each train sample
         '''
+        #import ipdb; ipdb.set_trace()
         num_train = self.train_X.shape[0]
         num_test = X.shape[0]
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
             for i_train in range(num_train):
                 # TODO: Fill dists[i_test][i_train]
-                pass
+                #pass
+                dists[i_test][i_train] = np.sum(abs(X[i_test] - self.train_X[i_train]))
+                
+        return dists
 
     def compute_distances_one_loop(self, X):
         '''
@@ -69,14 +73,18 @@ class KNN:
         dists, np array (num_test_samples, num_train_samples) - array
            with distances between each test and each train sample
         '''
+        #import ipdb; ipdb.set_trace()
         num_train = self.train_X.shape[0]
         num_test = X.shape[0]
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
             # TODO: Fill the whole row of dists[i_test]
             # without additional loops or list comprehensions
-            pass
-
+            #pass
+            dists[i_test] = np.sum(abs(X[i_test] - self.train_X), axis=1)
+        
+        return dists
+    
     def compute_distances_no_loops(self, X):
         '''
         Computes L1 distance from every sample of X to every training sample
@@ -89,12 +97,16 @@ class KNN:
         dists, np array (num_test_samples, num_train_samples) - array
            with distances between each test and each train sample
         '''
+        #import ipdb; ipdb.set_trace()
         num_train = self.train_X.shape[0]
         num_test = X.shape[0]
         # Using float32 to to save memory - the default is float64
         dists = np.zeros((num_test, num_train), np.float32)
         # TODO: Implement computing all distances with no loops!
-        pass
+        #pass
+        dists = np.sum(abs(X[:, np.newaxis] - self.train_X), axis=2)
+        
+        return dists
 
     def predict_labels_binary(self, dists):
         '''
@@ -108,12 +120,22 @@ class KNN:
         pred, np array of bool (num_test_samples) - binary predictions 
            for every test sample
         '''
+        #import ipdb; ipdb.set_trace()
         num_test = dists.shape[0]
         pred = np.zeros(num_test, np.bool)
         for i in range(num_test):
             # TODO: Implement choosing best class based on k
             # nearest training samples
-            pass
+            #pass
+            
+            #pred[i] = self.train_y[np.argmin(dists[i])]
+            
+            first_indexes = np.argpartition(dists[i], self.k)[:self.k]
+            first_values = self.train_y[first_indexes]
+            counting_booleans = np.bincount(first_values)  #with boolean return (count_False, count_True)
+            most_freq = np.argmax(counting_booleans)       #return 0 or 1 
+            pred[i] = bool(most_freq)                      #formating 0 or 1 to False or True
+            
         return pred
 
     def predict_labels_multiclass(self, dists):
@@ -128,11 +150,19 @@ class KNN:
         pred, np array of int (num_test_samples) - predicted class index 
            for every test sample
         '''
-        num_test = dists.shape[0]
+        
+        #import ipdb; ipdb.set_trace()
         num_test = dists.shape[0]
         pred = np.zeros(num_test, np.int)
+        
         for i in range(num_test):
             # TODO: Implement choosing best class based on k
             # nearest training samples
-            pass
+            #pass
+            
+            first_indexes = np.argpartition(dists[i], self.k)[:self.k]
+            first_values = self.train_y[first_indexes]
+            counting = np.bincount(first_values)
+            pred[i] = np.argmax(counting)
+            
         return pred
