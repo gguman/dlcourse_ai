@@ -38,7 +38,15 @@ def cross_entropy_loss(probs, target_index):
     '''
     # TODO implement cross-entropy
     # Your final implementation shouldn't have any loops
-    raise Exception("Not implemented!")
+    
+    ground_truth = np.zeros(probs.shape)
+    ground_truth[target_index] = 1
+    
+    #np.nan_to_num()
+    
+    return np.sum(ground_truth * np.log(probs))
+    
+    #raise Exception("Not implemented!")
 
 
 def softmax_with_cross_entropy(predictions, target_index):
