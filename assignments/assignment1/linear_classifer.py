@@ -145,7 +145,21 @@ def linear_softmax(X, W, target_index):
 
     # TODO implement prediction and gradient over W
     # Your final implementation shouldn't have any loops
-    raise Exception("Not implemented!")
+    #raise Exception("Not implemented!")
+    
+    probs = np.exp(predictions) / np.sum(np.exp(predictions), axis=1, keepdims=True)
+
+    ti = np.nditer(target_index, flags=['multi_index'])
+    
+    ground_truth = np.zeros_like(probs)
+    
+    while not ti.finished:
+        ground_truth[ti.multi_index[0], target_index[ti.multi_index]] = 1
+        ti.iternext()
+    
+    loss = -np.sum(ground_truth * np.log(probs))
+    
+    dW = np.dot(X.T, probs - ground_truth)
     
     return loss, dW
 
