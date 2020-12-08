@@ -16,8 +16,9 @@ def softmax(predictions):
     # TODO implement softmax
     # Your final implementation shouldn't have any loops
     
-    predictions -= np.max(predictions)
-    return np.exp(predictions)/np.sum(np.exp(predictions))
+    #predictions -= np.max(predictions)
+    predictions = np.subtract(predictions, predictions.max(axis=1, keepdims=True))
+    return np.exp(predictions)/np.sum(np.exp(predictions), axis=1, keepdims=True)
     
     #raise Exception("Not implemented!")
     
@@ -49,7 +50,7 @@ def cross_entropy_loss(probs, target_index):
     #raise Exception("Not implemented!")
 
 
-def softmax_with_cross_entropy(predictions, target_index):
+def _softmax_with_cross_entropy(predictions, target_index):
     '''
     Computes softmax and cross-entropy loss for model predictions,
     including the gradient
@@ -80,6 +81,29 @@ def softmax_with_cross_entropy(predictions, target_index):
     
     #raise Exception("Not implemented!")
 
+    return loss, dprediction
+
+def softmax_with_cross_entropy(predictions, target_index):
+    
+    #predictions -= np.max(predictions)
+    #probs = np.exp(predictions - np.max(predictions))/np.sum(np.exp(predictions - np.max(predictions)))
+    
+    predictions = np.subtract(predictions, predictions.max(axis=1, keepdims=True))
+    
+    probs = np.exp(predictions) / np.sum(np.exp(predictions), axis=1, keepdims=True)
+    
+    ti = np.nditer(target_index, flags=['multi_index'])
+    
+    ground_truth = np.zeros_like(probs)
+    
+    while not ti.finished:
+        ground_truth[ti.multi_index[0], target_index[ti.multi_index]] = 1
+        ti.iternext()
+        
+    loss = -np.sum(ground_truth * np.log(probs))
+    
+    dprediction = probs - ground_truth
+    
     return loss, dprediction
 
 
