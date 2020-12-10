@@ -200,7 +200,7 @@ class LinearSoftmaxClassifier():
             loss = np.mean(losses) 
             loss_history.append(loss)
             # end
-            print("Epoch %i, loss: %f" % (epoch, loss))
+            #print("Epoch %i, loss: %f" % (epoch, loss))
 
         return loss_history
 
@@ -218,7 +218,11 @@ class LinearSoftmaxClassifier():
 
         # TODO Implement class prediction
         # Your final implementation shouldn't have any loops
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        
+        probs = softmax(np.dot(X, self.W))
+        y_pred = np.argmax(probs, axis=1)
+        
 
         return y_pred
 
