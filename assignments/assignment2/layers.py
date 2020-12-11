@@ -58,7 +58,15 @@ class ReLULayer:
         # TODO: Implement forward pass
         # Hint: you'll need to save some information about X
         # to use it later in the backward pass
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        
+        self.X = X
+        
+        result = np.maximum(X, np.zeros_like(X))
+        
+        return result
+        
+        
 
     def backward(self, d_out):
         """
@@ -74,7 +82,12 @@ class ReLULayer:
         """
         # TODO: Implement backward pass
         # Your final implementation shouldn't have any loops
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        
+        d_result = np.clip(np.ceil(self.X), 0, 1)
+        
+        d_result = d_result * d_out
+        
         return d_result
 
     def params(self):
