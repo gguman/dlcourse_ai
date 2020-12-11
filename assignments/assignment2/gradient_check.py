@@ -39,10 +39,7 @@ def check_gradient(f, x, delta=1e-5, tol=1e-4):
         
         add_x = x.copy()
         add_x[ix] += delta
-        #zeros = np.zeros(x.shape)
-        #zeros[ix] = delta
-        #add_x = np.add(x, zeros)
-
+        
         numeric_grad_at_ix = (f(add_x)[0] - f(orig_x)[0])/ delta
         print(f'{ix}: {numeric_grad_at_ix:.8f}')
         
