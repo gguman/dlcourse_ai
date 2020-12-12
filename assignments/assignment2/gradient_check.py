@@ -21,13 +21,13 @@ def check_gradient(f, x, delta=1e-5, tol=1e-4):
     fx, analytic_grad = f(x)
     analytic_grad = analytic_grad.copy()
     
-    print(f'Analytic grad:\n{analytic_grad}\n')
+    #print(f'Analytic grad:\n{analytic_grad}\n')
     
     assert analytic_grad.shape == x.shape
 
     orig_x = x.copy()
     
-    print('Numeric grad:')
+    #print('Numeric grad:')
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
     while not it.finished:
         ix = it.multi_index
@@ -40,12 +40,17 @@ def check_gradient(f, x, delta=1e-5, tol=1e-4):
         add_x = x.copy()
         add_x[ix] += delta
         
-        numeric_grad_at_ix = (f(add_x)[0] - f(orig_x)[0])/ delta
-        print(f'{ix}: {numeric_grad_at_ix:.8f}')
+        sub_x = x.copy()
+        sub_x[ix] -= delta
+        #import ipdb; ipdb.set_trace()
+        
+        numeric_grad_at_ix = (f(add_x)[0] - f(sub_x)[0])/ (2 * delta)
+        #print(f'{ix}: {numeric_grad_at_ix:.8f}')
         
         if not np.isclose(numeric_grad_at_ix, analytic_grad_at_ix, tol):
-            print("Gradients are different at %s. Analytic: %2.5f, Numeric: %2.5f" % (
-                  ix, analytic_grad_at_ix, numeric_grad_at_ix))
+            print(f"Gradients are different at {ix}. Analytic: {analytic_grad_at_ix:.9f}, Numeric: {numeric_grad_at_ix:.9f}")
+            #print("Gradients are different at %s. Analytic: %2.5f, Numeric: %2.5f" % (
+            #      ix, analytic_grad_at_ix, numeric_grad_at_ix))
             return False
 
         it.iternext()
