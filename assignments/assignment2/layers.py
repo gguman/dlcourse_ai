@@ -34,8 +34,18 @@ def softmax_with_cross_entropy(preds, target_index):
       dprediction, np array same shape as predictions - gradient of predictions by loss value
     """
     # TODO: Copy from the previous assignment
-    raise Exception("Not implemented!")
-
+    #raise Exception("Not implemented!")
+    
+    predictions = np.subtract(preds, preds.max(axis=1, keepdims=True))
+    probs = np.exp(preds)/np.sum(np.exp(preds), axis=1, keepdims=True)
+    
+    ground_truth = np.zeros_like(probs)
+    ground_truth[np.arange(probs.shape[0]), target_index] = 1
+    
+    d_preds = probs - ground_truth
+    
+    loss = -np.sum(ground_truth * np.log(probs))
+    
     return loss, d_preds
 
 

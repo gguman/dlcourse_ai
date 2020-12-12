@@ -18,7 +18,8 @@ class TwoLayerNet:
         """
         self.reg = reg
         # TODO Create necessary layers
-        raise Exception("Not implemented!")
+        self.fcl1 = FullyConnectedLayer(n_input, n_output)
+        #raise Exception("Not implemented!")
 
     def compute_loss_and_gradients(self, X, y):
         """
@@ -33,15 +34,30 @@ class TwoLayerNet:
         # clear parameter gradients aggregated from the previous pass
         # TODO Set parameter gradient to zeros
         # Hint: using self.params() might be useful!
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        
+        self.params(self.fcl1)
         
         # TODO Compute loss and fill param gradients
         # by running forward and backward passes through the model
         
+        ffcl1 = self.fcl1.forward(X)
+        
+        loss, d_preds = softmax_with_cross_entropy(ffcl1, y)
+        
+        bfcl1 = self.fcl1.backward(d_preds)
+        
+
         # After that, implement l2 regularization on all params
         # Hint: self.params() is useful again!
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        
+        loss_reg = self.reg * np.sum(np.power(self.fcl1.W.value, 2))
+        grad_reg = 2 * self.reg * self.fcl1.W.value
 
+        loss += loss_reg
+        self.fcl1.W.grad += grad_reg
+        
         return loss
 
     def predict(self, X):
@@ -62,11 +78,18 @@ class TwoLayerNet:
         raise Exception("Not implemented!")
         return pred
 
-    def params(self):
-        result = {}
+    def params(self, layer=None):
+        if not layer:
+            result = {'W': self.fcl1.W, 'B': self.fcl1.B}
+            return result
+        else:
+            layer.W.grad = np.zeros_like(layer.W.grad)
+            layer.B.grad = np.zeros_like(layer.B.grad)
 
-        # TODO Implement aggregating all of the params
 
-        raise Exception("Not implemented!")
+        #    # TODO Implement aggregating all of the params
 
-        return result
+        #    #raise Exception("Not implemented!")
+
+        #    return result
+        
