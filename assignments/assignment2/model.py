@@ -18,7 +18,10 @@ class TwoLayerNet:
         """
         self.reg = reg
         # TODO Create necessary layers
-        self.fcl1 = FullyConnectedLayer(n_input, n_output)
+        self.fcl1 = FullyConnectedLayer(n_input, hidden_layer_size)
+        self.relu = ReLULayer()
+        self.fcl2 = FullyConnectedLayer(hidden_layer_size, n_output)
+        
         #raise Exception("Not implemented!")
 
     def compute_loss_and_gradients(self, X, y):
@@ -37,26 +40,43 @@ class TwoLayerNet:
         #raise Exception("Not implemented!")
         
         self.params(self.fcl1)
+        self.params(self.fcl2)
         
         # TODO Compute loss and fill param gradients
         # by running forward and backward passes through the model
         
+        #import ipdb; ipdb.set_trace()
         ffcl1 = self.fcl1.forward(X)
+        frelu = self.relu.forward(ffcl1)
+        ffcl2 = self.fcl2.forward(frelu)
         
-        loss, d_preds = softmax_with_cross_entropy(ffcl1, y)
+        loss, d_preds = softmax_with_cross_entropy(ffcl2, y)
         
-        bfcl1 = self.fcl1.backward(d_preds)
+        bfcl2 = self.fcl2.backward(d_preds)
+        brelu = self.relu.backward(bfcl2)
+        bfcl1 = self.fcl1.backward(brelu)
         
-
         # After that, implement l2 regularization on all params
         # Hint: self.params() is useful again!
         #raise Exception("Not implemented!")
         
-        loss_reg = self.reg * np.sum(np.power(self.fcl1.W.value, 2))
-        grad_reg = 2 * self.reg * self.fcl1.W.value
-
-        loss += loss_reg
-        self.fcl1.W.grad += grad_reg
+        loss_reg_w1 = self.reg * np.sum(np.power(self.fcl1.W.value, 2))
+        loss_reg_w2 = self.reg * np.sum(np.power(self.fcl2.W.value, 2))
+        
+        loss_reg_b1 = self.reg * np.sum(np.power(self.fcl1.B.value, 2))
+        loss_reg_b2 = self.reg * np.sum(np.power(self.fcl2.B.value, 2))
+        
+        loss += loss_reg_w1
+        loss += loss_reg_w2
+        
+        loss += loss_reg_b1
+        loss += loss_reg_b2
+        
+        self.fcl1.W.grad = self.fcl1.W.grad  + 2 * self.reg * self.fcl1.W.value
+        self.fcl2.W.grad = self.fcl2.W.grad  + 2 * self.reg * self.fcl2.W.value
+        
+        self.fcl1.B.grad += 2 * self.reg * self.fcl1.B.value
+        self.fcl2.B.grad += 2 * self.reg * self.fcl2.B.value
         
         return loss
 
@@ -80,7 +100,10 @@ class TwoLayerNet:
 
     def params(self, layer=None):
         if not layer:
-            result = {'W': self.fcl1.W, 'B': self.fcl1.B}
+            result = {
+                'W1': self.fcl1.W, 'B1': self.fcl1.B,
+                'W2': self.fcl2.W, 'B2': self.fcl2.B
+            }
             return result
         else:
             layer.W.grad = np.zeros_like(layer.W.grad)
