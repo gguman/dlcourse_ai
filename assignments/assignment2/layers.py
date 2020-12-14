@@ -14,9 +14,16 @@ def l2_regularization(W, reg_strength):
       gradient, np.array same shape as W - gradient of weight by l2 loss
     """
     # TODO: Copy from the previous assignment
-    raise Exception("Not implemented!")
+    #raise Exception("Not implemented!")
     return loss, grad
 
+
+def softmax(preds):
+    
+    predictions = np.subtract(preds, preds.max(axis=1, keepdims=True))
+    probs = np.exp(preds)/np.sum(np.exp(preds), axis=1, keepdims=True)
+    
+    return probs
 
 def softmax_with_cross_entropy(preds, target_index):
     """
@@ -36,8 +43,10 @@ def softmax_with_cross_entropy(preds, target_index):
     # TODO: Copy from the previous assignment
     #raise Exception("Not implemented!")
     
-    predictions = np.subtract(preds, preds.max(axis=1, keepdims=True))
-    probs = np.exp(preds)/np.sum(np.exp(preds), axis=1, keepdims=True)
+    #predictions = np.subtract(preds, preds.max(axis=1, keepdims=True))
+    #probs = np.exp(preds)/np.sum(np.exp(preds), axis=1, keepdims=True)
+    
+    probs = softmax(preds)
     
     ground_truth = np.zeros_like(probs)
     ground_truth[np.arange(probs.shape[0]), target_index] = 1
@@ -45,6 +54,8 @@ def softmax_with_cross_entropy(preds, target_index):
     d_preds = probs - ground_truth
     
     loss = -np.sum(ground_truth * np.log(probs))
+    
+    #if np.isnan(loss): import ipdb; ipdb.set_trace()
     
     return loss, d_preds
 
