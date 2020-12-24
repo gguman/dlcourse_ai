@@ -211,15 +211,61 @@ class MaxPoolingLayer:
 
     def forward(self, X):
         batch_size, height, width, channels = X.shape
+        
+        self.X = X
+        
         # TODO: Implement maxpool forward pass
         # Hint: Similarly to Conv layer, loop on
         # output x/y dimension
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        
+        #out_height = int(self.pool_size / self.stride)
+        #out_width = int(self.pool_size / self.stride)
+        
+        self.out_height = int((height - self.pool_size) / self.stride) + 1
+        self.out_width = int((width - self.pool_size) / self.stride) + 1
+        
+        self.result = np.zeros((batch_size, self.out_width, self.out_height, channels))
+        
+        for x in range(self.out_width):
+            for y in range(self.out_height):
+                for b in range(batch_size):
+                    for c in range(channels):
+                        x_start = x * self.stride 
+                        x_end = x * self.stride + self.pool_size
+                        
+                        y_start = y * self.stride
+                        y_end = x * self.stride + self.pool_size
+                        
+                        self.result[b, x, y, c] =\
+                            np.max(X[b, x_start:x_end, y_start:y_end, c])
+        
+        return self.result
+        
 
     def backward(self, d_out):
         # TODO: Implement maxpool backward pass
         batch_size, height, width, channels = self.X.shape
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        
+        d_input = np.zeros_like(self.X)
+        
+        for x in range(self.out_width):
+            for y in range(self.out_height):
+                for b in range(batch_size):
+                    for c in range(channels):
+                        x_start = x * self.stride 
+                        x_end = x * self.stride + self.pool_size
+                        
+                        y_start = y * self.stride
+                        y_end = x * self.stride + self.pool_size
+                        
+                        d_input[b, x_start:x_end, y_start:y_end, c] =\
+                            np.isin(
+                                self.X[b, x_start:x_end, y_start:y_end, c],
+                                self.result[b, x, y, c]) * d_out[b, x, y, c]
+        return d_input
+        
 
     def params(self):
         return {}
