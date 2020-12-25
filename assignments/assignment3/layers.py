@@ -18,6 +18,12 @@ def l2_regularization(W, reg_strength):
 
     return loss, grad
 
+def softmax(preds):
+    
+    predictions = np.subtract(preds, preds.max(axis=1, keepdims=True))
+    probs = np.exp(preds)/np.sum(np.exp(preds), axis=1, keepdims=True)
+    
+    return probs
 
 def softmax_with_cross_entropy(predictions, target_index):
     '''
@@ -35,8 +41,20 @@ def softmax_with_cross_entropy(predictions, target_index):
       dprediction, np array same shape as predictions - gradient of predictions by loss value
     '''
     # TODO copy from the previous assignment
-    raise Exception("Not implemented!")
-    return loss, dprediction
+    #raise Exception("Not implemented!")
+    
+    probs = softmax(predictions)
+    
+    
+    ground_truth = np.zeros_like(probs)
+    ground_truth[np.arange(probs.shape[0]), target_index] = 1
+    
+    d_preds = (probs - ground_truth)/probs.shape[0]
+    
+    loss = -np.sum(ground_truth * np.log(probs))/probs.shape[0]
+    
+    
+    return loss, d_preds
 
 
 class Param:
@@ -55,11 +73,21 @@ class ReLULayer:
 
     def forward(self, X):
         # TODO copy from the previous assignment
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        self.X = X
+        
+        result = np.maximum(X, np.zeros_like(X))
+        
+        return result
 
     def backward(self, d_out):
         # TODO copy from the previous assignment
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        
+        d_result = np.clip(np.ceil(self.X), 0, 1)
+        
+        d_result = d_result * d_out
+        
         return d_result
 
     def params(self):
@@ -74,12 +102,23 @@ class FullyConnectedLayer:
 
     def forward(self, X):
         # TODO copy from the previous assignment
-        raise Exception("Not implemented!")
+        #raise Exception("Not implemented!")
+        self.X = X
+        result = np.dot(X, self.W.value) + self.B.value
+        
+        return result
 
     def backward(self, d_out):
         # TODO copy from the previous assignment
+        #raise Exception("Not implemented!")    
         
-        raise Exception("Not implemented!")        
+        db = np.sum(d_out, axis=0)
+        dw = np.dot(self.X.T, d_out)
+        d_input = np.dot(d_out, self.W.value.T)
+        
+        self.B.grad += db
+        self.W.grad += dw
+            
         return d_input
 
     def params(self):
@@ -176,10 +215,12 @@ class ConvolutionalLayer:
                 #import ipdb; ipdb.set_trace()
                 _X = self.X[:, x:x+self.filter_size, y:y+self.filter_size, :].reshape(batch_size, -1)
                 
-                dX = np.dot(d_out[:, x, y, :], _W.T)\
-                    .reshape(batch_size, self.filter_size, self.filter_size, channels)
-                dW = np.dot(_X.T, d_out[:, x, y, :])\
-                    .reshape(self.filter_size, self.filter_size, self.in_channels, self.out_channels)
+                dX = np.dot(d_out[:, x, y, :], _W.T).reshape(batch_size, 
+                                                             self.filter_size, 
+                                                             self.filter_size, 
+                                                             channels)
+                                                             
+                dW = np.dot(_X.T, d_out[:, x, y, :]).reshape(self.W.grad.shape)
                 dB = d_out[:, x, y, :].sum(axis=0)
                 
                 d_input[:, x:x+self.filter_size, y:y+self.filter_size, :] += dX
@@ -194,7 +235,6 @@ class ConvolutionalLayer:
 
     def params(self):
         return { 'W': self.W, 'B': self.B }
-
 
 class MaxPoolingLayer:
     def __init__(self, pool_size, stride):
@@ -235,7 +275,7 @@ class MaxPoolingLayer:
                         x_end = x * self.stride + self.pool_size
                         
                         y_start = y * self.stride
-                        y_end = x * self.stride + self.pool_size
+                        y_end = y * self.stride + self.pool_size
                         
                         self.result[b, x, y, c] =\
                             np.max(X[b, x_start:x_end, y_start:y_end, c])
@@ -258,7 +298,7 @@ class MaxPoolingLayer:
                         x_end = x * self.stride + self.pool_size
                         
                         y_start = y * self.stride
-                        y_end = x * self.stride + self.pool_size
+                        y_end = y * self.stride + self.pool_size
                         
                         d_input[b, x_start:x_end, y_start:y_end, c] =\
                             np.isin(
@@ -276,6 +316,7 @@ class Flattener:
         self.X_shape = None
 
     def forward(self, X):
+        
         batch_size, height, width, channels = X.shape
         self.X = X
         # TODO: Implement forward pass
